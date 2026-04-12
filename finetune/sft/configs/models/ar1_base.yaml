@@ -1,0 +1,3 @@
+_target_: finetune.sft.models.sft_base_model.TrainableReasoningVLA.from_alpamayo_checkpoint
+checkpoint_path: alpamayo_weights
+vlm_name_or_path: ./qwen3_vl

@@ -1,0 +1,45 @@
+# Large model files
+*.safetensors
+*.bin
+*.pt
+*.pth
+
+# Weights and model directories
+alpamayo_weights/
+qwen3_vl_2B/
+qwen3vl/
+
+# Dataset directories (large)
+pai_datasets/
+pai_datasets_frames/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
