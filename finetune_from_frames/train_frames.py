@@ -67,6 +67,9 @@ def train(cfg: DictConfig) -> None:
     )
 
     # Instantiate collate function
+    # Unlike the original collate_fn_from_model_config, collate_fn_frames does not require
+    # model_config because the FramesDataset already applies vla_preprocess_func during
+    # __getitem__, so collate_fn_frames only needs to aggregate the preprocessed samples
     collate_fn = hyu.instantiate(
         cfg.data.collate_fn, _convert_="partial"
     )

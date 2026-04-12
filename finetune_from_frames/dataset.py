@@ -86,23 +86,46 @@ class FramesDataset(Dataset):
             sample = self.all_samples[sample_idx]
 
             # Load camera images
-            images = self._load_camera_images(sample)
+            image_frames = self._load_camera_images(sample)  # (num_cameras, num_frames, 3, H, W)
+
+            # Generate camera indices
+            # For 4 cameras with num_frames each, camera_indices = [0,0,...,0, 1,1,...,1, 2,2,...,2, 3,3,...,3]
+            num_cameras, num_frames = image_frames.shape[0], image_frames.shape[1]
+            camera_indices = torch.repeat_interleave(
+                torch.arange(num_cameras, dtype=torch.long), num_frames
+            )
+
+            # Generate relative timestamps (assuming uniform distribution)
+            # Default: assume 0.1s per frame, starting from -1.6s (16 frames history)
+            timestamps_per_frame = 0.1
+            relative_timestamps = torch.arange(
+                -(num_frames - 1) * timestamps_per_frame,
+                timestamps_per_frame,
+                timestamps_per_frame,
+                dtype=torch.float32
+            )
+            # Repeat for each camera
+            relative_timestamps = relative_timestamps.repeat(num_cameras)
 
             # Extract trajectory data
             ego_history_xyz, ego_history_rot = self._extract_trajectory(sample)
 
-            # Prepare output dict
+            # Flatten images from (num_cameras, num_frames, 3, H, W) to (num_cameras*num_frames, 3, H, W)
+            image_frames_flat = image_frames.flatten(0, 1)
+
+            # Prepare output dict - use same field names as PAIDataset for compatibility
             output = {
-                "images": images,
+                "image_frames": image_frames_flat,
+                "camera_indices": camera_indices,
+                "relative_timestamps": relative_timestamps,
                 "ego_history_xyz": ego_history_xyz,
                 "ego_history_rot": ego_history_rot,
             }
 
             # Apply VLA preprocessing if configured
             if self.vla_preprocess_func is not None:
-                # Flatten images from (num_cameras, num_frames, 3, H, W) to (num_cameras*num_frames, 3, H, W)
-                flat_images = images.flatten(0, 1)
-                processed = self.vla_preprocess_func(flat_images)
+                # Pass the entire data dict to the preprocessor
+                processed = self.vla_preprocess_func(data=output)
                 output["tokenized_data"] = processed
 
             return output
